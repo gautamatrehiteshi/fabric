@@ -1,0 +1,31 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: api-peer-svc
+  name: api-peer-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: api-peer
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: api-peer-headless
+  name: api-peer-headless
+spec:
+  clusterIP: None
+  selector:
+    app: api-peer
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

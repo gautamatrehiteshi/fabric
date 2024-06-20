@@ -1,0 +1,1081 @@
+{
+  "concepts": {
+    "milestoneContract": {
+      "type": "object",
+      "subtype": "array",
+      "default": [],
+      "item": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "amount": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "enums": {
+    "TOKEN_STATUS_ENUM": [
+      "UTXO_PENDING_STATUS",
+      "UTXO_FORWARDED_STATUS",
+      "UTXO_FROZEN_STATUS",
+      "UTXO_BURNED_STATUS"
+    ],
+    "TOKEN_OWNER_TYPE_ENUM": [
+      "member",
+      "category",
+      "project",
+      "projectMilestone"
+    ],
+    "PROJECT_STATUS_ENUM": [
+      "PROJECT_ONGOING",
+      "PROJECT_COMPLETED",
+      "PROJECT_CANCELED",
+      "PROJECT_SETTLEMENT"
+    ],
+    "PROJECT_MILESTONE_STATUS_ENUM": [
+      "MILESTONE_ONGOING",
+      "MILESTONE_COMPLETED",
+      "MILESTONE_CANCELED",
+      "MILESTONE_IDLE"
+    ],
+    "MEMBER_TYPE_ENUM": [
+      "USER_MEMBER",
+      "PARTNER_MEMBER",
+      "ASSOCIATION_MEMBER",
+      "OTHER_MEMBER"
+    ],
+    "CASHBACK_STATUS_ENUM": [
+      "PENDING_CASHBACK_STATUS",
+      "VALID_CASHBACK_STATUS",
+      "CANCELED_CASHBACK_STATUS"
+    ],
+    "TRANSFER_TYPE_ENUM": ["CASHBACK", "DONATION"]
+  },
+  "registries": {
+    "wallet": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Wallet",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "token": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Token",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          },
+          "ownerId": {
+            "optional": true,
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "originId": {
+            "optional": true,
+            "type": "string",
+            "subtype": "ref",
+            "resource": "token"
+          },
+          "status": {
+            "type": "string",
+            "subtype": "ENUM",
+            "default": "UTXO_PENDING_STATUS",
+            "resource": "TOKEN_STATUS_ENUM"
+          },
+          "deposit": {
+            "type": "object",
+            "properties": {
+              "depositId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "deposit"
+              },
+              "issuerId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "member"
+              }
+            }
+          },
+          "cashback": {
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "cashbackTransactionId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "cashback"
+              },
+              "partnerId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "member"
+              },
+              "consumerId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "member"
+              },
+              "status": {
+                "type": "string",
+                "subtype": "ENUM",
+                "resource": "CASHBACK_STATUS_ENUM"
+              }
+            }
+          },
+          "allocation": {
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "allocationId": {
+                "type": "string"
+              },
+              "patronId": {
+                "type": "string",
+                "subtype": "ref",
+                "resource": "member"
+              }
+            }
+          }
+        }
+      }
+    },
+    "transferDetails": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "TransferDetails",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "receiverId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "transferType": {
+            "type": "string",
+            "subtype": "ENUM",
+            "resource": "TRANSFER_TYPE_ENUM"
+          },
+          "cashbackTransactionId": {
+            "optional": true,
+            "type": "string",
+            "subtype": "ref",
+            "resource": "cashback"
+          },
+          "cashbackStatus": {
+            "optional": true,
+            "type": "string",
+            "subtype": "ENUM",
+            "resource": "CASHBACK_STATUS_ENUM"
+          },
+          "creationDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "deposit": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Deposit",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "patronId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "creationDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "cashback": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Cashback",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "partnerId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "consumerId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "creationDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "member": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Member",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "memberType": {
+            "type": "string",
+            "subtype": "ENUM",
+            "default": "USER_MEMBER",
+            "resource": "MEMBER_TYPE_ENUM"
+          },
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          },
+          "categories": {
+            "optional": true,
+            "type": "object",
+            "subtype": "array",
+            "item": {
+              "type": "string",
+              "subtype": "ref",
+              "resource": "category"
+            }
+          }
+        }
+      }
+    },
+    "member2": {
+      "description": "TODO",
+      "destination": "state",
+      "schema": {
+        "title": "Member",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "memberType": {
+            "type": "string",
+            "subtype": "ENUM",
+            "default": "USER_MEMBER",
+            "resource": "MEMBER_TYPE_ENUM"
+          },
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          },
+          "categories": {
+            "optional": true,
+            "type": "object",
+            "subtype": "array",
+            "item": {
+              "type": "string",
+              "subtype": "ref",
+              "resource": "category"
+            }
+          }
+        }
+      }
+    }
+  },
+  "transactions": {
+    "issueToken": {
+      "description": "TODO",
+      "registry": "token",
+      "output": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "token"
+        }
+      ],
+      "input": {
+        "type": "object",
+        "properties": {
+          "patronId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "depositId": {
+            "type": "string"
+          },
+          "creationDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "allocateTokens": {
+      "description": "TODO",
+      "registry": "token",
+      "output": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "token"
+        },
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "transferDetails"
+        }
+      ],
+      "input": {
+        "type": "object",
+        "properties": {
+          "patronId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "allocationId": {
+            "type": "string"
+          },
+          "beneficiaries": {
+            "type": "object",
+            "subtype": "array",
+            "item": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "number"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "issueDirectDonation": {
+      "description": "TODO",
+      "registry": "token",
+      "type": "object",
+      "properties": {
+        "donationId": {
+          "type": "string"
+        },
+        "consumerId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "associationId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "amount": {
+          "type": "number"
+        }
+      }
+    },
+    "issueCashback": {
+      "description": "TODO",
+      "registry": "cashback",
+      "type": "object",
+      "properties": {
+        "cashbackTransactionId": {
+          "type": "string"
+        },
+        "partnerId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "consumerId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "subtype": "ENUM",
+          "resource": "CASHBACK_STATUS_ENUM",
+          "optional": true
+        }
+      }
+    },
+    "allocateCashback": {
+      "description": "TODO",
+      "registry": "cashback",
+      "type": "object",
+      "properties": {
+        "patronId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "allocationId": {
+          "type": "string"
+        },
+        "beneficiaries": {
+          "type": "object",
+          "subtype": "array",
+          "item": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateCashbackStatus": {
+      "description": "TODO",
+      "registry": "cashback",
+      "type": "object",
+      "records": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "token"
+        },
+        {
+          "type": "object",
+          "subtype": "ref",
+          "resource": "transferDetails"
+        }
+      ],
+      "properties": {
+        "cashbackTransactionId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "subtype": "ENUM",
+          "resource": "CASHBACK_STATUS_ENUM"
+        }
+      }
+    },
+    "queryFrozenCashbackAllocation": {
+      "description": "TODO",
+      "registry": "cashback",
+      "type": "object",
+      "properties": {
+        "allocationId": {
+          "type": "string"
+        }
+      }
+    },
+    "queryFrozenCashbackUpdate": {
+      "type": "object",
+      "description": "TODO",
+      "registry": "cashback",
+      "properties": {
+        "cashbackTransactionId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "cashback"
+        }
+      }
+    },
+    "confirmTokenWithdrawal": {
+      "description": "TODO",
+      "registry": "token",
+      "type": "object",
+      "properties": {
+        "associationId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "consumerId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        },
+        "amount": {
+          "type": "number"
+        }
+      }
+    },
+    "queryWalletBalance": {
+      "description": "TODO",
+      "registry": "wallet",
+      "type": "object",
+      "properties": {
+        "walletId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "wallet"
+        }
+      }
+    },
+    "queryMemberBalance": {
+      "description": "TODO",
+      "registry": "member",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        }
+      }
+    },
+    "queryTokensIssuedByMember": {
+      "description": "TODO",
+      "registry": "member",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        }
+      }
+    },
+    "queryDonationsByMember": {
+      "description": "TODO",
+      "registry": "member",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        }
+      }
+    },
+    "queryFrozenTokenOrigins": {
+      "description": "TODO",
+      "registry": "token",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "subtype": "ref",
+          "resource": "member"
+        }
+      }
+    }
+  },
+  "queries": {
+    "queryWalletContent": {
+      "description": "TODO",
+      "registry": "wallet",
+      "input": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          }
+        }
+      },
+      "output": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "token"
+        }
+      ],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "walletId": "${input_walletId}",
+          "status": "UTXO_PENDING_STATUS",
+          "cashback.status": {
+            "$ne": "CANCELED_CASHBACK_STATUS"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "walletId": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "pendingTokensPerWallet"
+      }
+    },
+    "queryWalletFullContent": {
+      "description": "TODO",
+      "registry": "wallet",
+      "input": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          }
+        }
+      },
+      "output": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "token"
+        }
+      ],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "walletId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "tokensPerWallet"
+      }
+    },
+    "queryWalletOwner": {
+      "description": "TODO",
+      "registry": "wallet",
+      "args": ["walletId"],
+      "query": {
+        "selector": {
+          "docType": {
+            "$ne": "Token"
+          },
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          }
+        },
+        "use_index": "walletOwner"
+      }
+    },
+    "queryDepositByPatron": {
+      "description": "TODO",
+      "registry": "deposit",
+      "args": ["patronId"],
+      "query": {
+        "selector": {
+          "docType": "Deposit",
+          "patronId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          }
+        }
+      }
+    },
+    "queryTokenByDeposit": {
+      "description": "TODO",
+      "registry": "token",
+      "args": ["depositId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "deposit": {
+            "depositId": {
+              "type": "string",
+              "subtype": "ref",
+              "resource": "deposit"
+            }
+          },
+          "status": {
+            "$ne": "UTXO_FORWARDED_STATUS"
+          },
+          "cashback.status": {
+            "$ne": "CANCELED_CASHBACK_STATUS"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "deposit.depositId": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "notForwardedTokensPerDeposit"
+      }
+    },
+    "queryTokensIssuedByMember": {
+      "description": "TODO",
+      "registry": "token",
+      "args": ["issuerId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "deposit": {
+            "issuerId": {
+              "type": "string",
+              "subtype": "ref",
+              "resource": "member"
+            }
+          },
+          "status": {
+            "$ne": "UTXO_FORWARDED_STATUS"
+          },
+          "cashback.status": {
+            "$ne": "CANCELED_CASHBACK_STATUS"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "deposit.issuerId": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "notForwardedTokensPerDepositIssuer"
+      }
+    },
+    "queryInboundTransfers": {
+      "description": "TODO",
+      "registry": "member",
+      "args": ["receiverId"],
+      "query": {
+        "selector": {
+          "docType": "TransferDetails",
+          "receiverId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "receiverId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "transferDetailsReceiver"
+      }
+    },
+    "queryOutboundTransfers": {
+      "description": "TODO",
+      "registry": "member",
+      "args": ["senderId"],
+      "query": {
+        "selector": {
+          "docType": "TransferDetails",
+          "senderId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "senderId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "transferDetailsSender"
+      }
+    },
+    "queryCashbackTokens": {
+      "description": "TODO",
+      "registry": "cashback",
+      "input": {
+        "type": "object",
+        "properties": {
+          "cashback.cashbackTransactionId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "cashbackTransaction"
+          }
+        }
+      },
+      "output": [
+        {
+          "type": "object",
+          "subtype": "registry",
+          "resource": "tokn"
+        }
+      ],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": {
+            "$ne": "UTXO_FORWARDED_STATUS"
+          },
+          "cashback.cashbackTransactionId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "cashback"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "cashback.cashbackTransactionId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "frozenTokensUpdate"
+      }
+    },
+    "queryFrozenCashbackUpdate": {
+      "description": "TODO",
+      "registry": "cashback",
+      "args": ["cashback.cashbackTransactionId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": "UTXO_FROZEN_STATUS",
+          "cashback.cashbackTransactionId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "cashback"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "cashback.cashbackTransactionId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "frozenTokensUpdate"
+      }
+    },
+    "queryFrozenCashbackAllocation": {
+      "description": "TODO",
+      "registry": "cashback",
+      "args": ["allocation.allocationId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": "UTXO_FROZEN_STATUS",
+          "allocation.allocationId": {
+            "type": "string"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "status": "desc"
+          },
+          {
+            "allocation.allocationId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "frozenTokensAllocation"
+      }
+    },
+    "queryFrozenTokensInWalletFromConsumer": {
+      "description": "TODO",
+      "registry": "token",
+      "args": ["cashback.cashbackTransactionId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": "UTXO_FROZEN_STATUS",
+          "walletId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "wallet"
+          },
+          "allocation.patronId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          }
+        }
+      }
+    },
+    "queryCashbackTransfers": {
+      "description": "TODO",
+      "registry": "cashback",
+      "args": ["cashbackTransactionId"],
+      "query": {
+        "selector": {
+          "docType": "TransferDetails",
+          "cashbackTransactionId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "cashback"
+          }
+        },
+        "sort": [
+          {
+            "docType": "desc"
+          },
+          {
+            "cashbackTransactionId": "desc"
+          },
+          {
+            "lastModified": "desc"
+          }
+        ],
+        "use_index": "transferDetailsCashback"
+      }
+    },
+    "queryCashbackByStatus": {
+      "description": "TODO",
+      "registry": "cashback",
+      "args": ["cashback.partnerId", "cashback.status"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": {
+            "$ne": "UTXO_FORWARDED_STATUS"
+          },
+          "cashback.partnerId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          },
+          "cashback.status": {
+            "type": "string",
+            "subtype": "ENUM",
+            "resource": "CASHBACK_STATUS_ENUM"
+          }
+        }
+      }
+    },
+    "queryCashbackDonations": {
+      "description": "TODO",
+      "registry": "cashback",
+      "args": ["cashback.consumerId"],
+      "query": {
+        "selector": {
+          "docType": "Token",
+          "status": {
+            "$ne": "UTXO_FORWARDED_STATUS"
+          },
+          "cashback.consumerId": {
+            "type": "string",
+            "subtype": "ref",
+            "resource": "member"
+          }
+        }
+      }
+    }
+  }
+}

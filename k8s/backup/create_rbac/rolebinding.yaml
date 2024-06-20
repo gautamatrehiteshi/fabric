@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: backup-peer
+  namespace: peers
+subjects:
+- kind: ServiceAccount
+  name: backup-peer
+  namespace: peers
+roleRef:
+  kind: Role
+  name: backup-peer
+  apiGroup: rbac.authorization.k8s.io
+

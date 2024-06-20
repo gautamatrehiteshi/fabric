@@ -1,0 +1,18 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: stop-peers
+  namespace: peers
+spec:
+  schedule: "50 23 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: stop-peer
+            image: registry.gitlab.com/flexper/internal/blockchain/fabric/fabric-architecture-seed/downscale:latest
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: gitlab-registry

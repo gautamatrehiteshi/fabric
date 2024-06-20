@@ -1,0 +1,3 @@
+- add check everywhere
+- run helm silently
+- clean config file before use

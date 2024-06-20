@@ -1,0 +1,7 @@
+generated/*
+genesis.block
+mychannel.tx
+config/ord*
+config/peer*
+config/fabric-samples
+fabric-ca-client-config.yaml

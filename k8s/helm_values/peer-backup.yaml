@@ -1,0 +1,22 @@
+image:
+  tag: 1.4.3
+
+persistence:
+  accessMode: ReadOnlyMany
+  size: 1Gi
+
+peer:
+  databaseType: CouchDB
+  couchdbInstance: cdb-peer-backup
+  mspID: PeerMSP
+
+secrets:
+  peer:
+    cert: hlf--peer-backup-idcert
+    key: hlf--peer-backup-idkey
+    caCert: hlf--peer-ca-cert
+  channels:
+    - hlf--channel
+  adminCert: hlf--peer-admincert
+  adminKey: hlf--peer-adminkey
+  caServerTls: ca--tls

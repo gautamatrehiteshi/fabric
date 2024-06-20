@@ -1,0 +1,98 @@
+version: '2'
+
+services:
+  zookeeper:
+    image: hyperledger/fabric-zookeeper
+    ports:
+      - 2181
+      - 2888
+      - 3888
+
+  kafka:
+    image: hyperledger/fabric-kafka
+    environment:
+      - KAFKA_LOG_RETENTION_MS=-1
+      - KAFKA_MESSAGE_MAX_BYTES=103809024
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+    ports:
+      - 9092
+
+  ca:
+    image: hyperledger/fabric-ca:1.4
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca-server
+      - BOOTSTRAP_USER_PASS=admin:adminpw
+    ports:
+      - 7054
+    command: sh -c 'fabric-ca-server start --ca.certfile $${FABRIC_CA_SERVER_CA_CERTFILE} --ca.keyfile $${FABRIC_CA_SERVER_CA_KEYFILE} -b $${BOOTSTRAP_USER_PASS} -d'
+    # networks:
+    #   behave:
+    #     aliases:
+    #       - ${CORE_PEER_NETWORKID}
+
+  orderer:
+    image: hyperledger/fabric-orderer:1.4
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+      # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${CORE_PEER_NETWORKID}_behave
+      # - ORDERER_HOME=/var/hyperledger/orderer
+      # - ORDERER_GENERAL_LEDGERTYPE=ram
+      # - ORDERER_GENERAL_GENESISMETHOD=file
+      # - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/configs/orderer.block
+      # - CONFIGTX_ORDERER_ORDERERTYPE=solo
+      # - CONFIGTX_ORDERER_BATCHSIZE_MAXMESSAGECOUNT=${CONFIGTX_ORDERER_BATCHSIZE_MAXMESSAGECOUNT}
+      # - CONFIGTX_ORDERER_BATCHTIMEOUT=${CONFIGTX_ORDERER_BATCHTIMEOUT}
+      # - CONFIGTX_ORDERER_ADDRESSES=[127.0.0.1:7050]
+      # # TLS settings
+      # - ORDERER_GENERAL_TLS_ENABLED=${ORDERER_GENERAL_TLS_ENABLED}
+      # - ORDERER_GENERAL_TLS_PRIVATEKEY=${ORDERER_GENERAL_TLS_PRIVATEKEY}
+      # - ORDERER_GENERAL_TLS_CERTIFICATE=${ORDERER_GENERAL_TLS_CERTIFICATE}
+      # - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/tls/ca.crt]
+      # - ORDERER_TLS_CLIENTAUTHREQUIRED=${ORDERER_TLS_CLIENTAUTHREQUIRED}
+      # - ORDERER_TLS_CLIENTROOTCAS_FILES=/var/hyperledger/users/Admin@example.com/tls/ca.crt
+      # - ORDERER_TLS_CLIENTCERT_FILE=/var/hyperledger/users/Admin@example.com/tls/client.crt
+      # - ORDERER_TLS_CLIENTKEY_FILE=/var/hyperledger/users/Admin@example.com/tls/client.key
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - '7050'
+
+  peer:
+    image: hyperledger/fabric-peer:1.4
+    environment:
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_CHAINCODE_STARTUPTIMEOUT=1200s
+      - CORE_CHAINCODE_BUILDER=hyperledger/fabric-ccenv:1.4
+    volumes:
+      - /var/run/:/host/var/run/
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - '7051'
+      - '7053'
+
+  couchdb:
+    image: hyperledger/fabric-couchdb:0.4
+
+  api:
+    image: registry.gitlab.com/flexper/internal/blockchain/fabric/fabric-architecture-seed/api
+    environment:
+      - NODE_ENV=development
+      - LOG_FILE_PATH=/data/log/api.log
+    ports:
+      - '4000'

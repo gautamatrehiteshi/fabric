@@ -1,0 +1,215 @@
+version: '2'
+
+networks:
+  ${docker_network}:
+    external:
+      name: ${docker_network}
+
+services:
+  ##################################################################################################################
+  ###                                                CA                                                          ###
+  ##################################################################################################################
+  ca.org1.${namespace}:
+    container_name: ca.org1.${namespace}
+    extends:
+      file: /home/src/docker-compose-base.yml
+      service: ca
+    environment:
+      - FABRIC_CA_SERVER_CSR_CN=ca.org1.${namespace}
+      - FABRIC_CA_SERVER_CSR_HOSTS=ca.org1.${namespace}
+      - FABRIC_CA_SERVER_CA_NAME=ca.org1.${namespace}
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.${namespace}-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/${ca-cert1}
+    ports:
+      - "7054:7054"
+    volumes:
+      - ${volume_cfg}/crypto-config/peerOrganizations/org1.${namespace}/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ${volume_cfg}/crypto-config/peerOrganizations/org1.${namespace}:/etc/hyperledger/fabric-ca-server
+    networks:
+      - ${docker_network}
+      
+  # ca.org2.${namespace}:
+  #   container_name: ca.org2.${namespace}
+  #   extends:
+  #     file: /home/src/docker-compose-base.yml
+  #     service: ca
+  #   environment:
+  #     - FABRIC_CA_SERVER_CSR_CN=ca.org2.${namespace}
+  #     - FABRIC_CA_SERVER_CSR_HOSTS=ca.org2.${namespace}
+  #     - FABRIC_CA_SERVER_CA_NAME=ca.org2.${namespace}
+  #     - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.${namespace}-cert.pem
+  #     - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/${ca-cert2}
+  #   ports:
+  #     - "8054:7054"
+  #   volumes:
+  #     - ${volume_cfg}/crypto-config/peerOrganizations/org2.${namespace}/ca/:/etc/hyperledger/fabric-ca-server-config
+  #     - ${volume_cfg}/crypto-config/peerOrganizations/org2.${namespace}:/etc/hyperledger/fabric-ca-server
+  #   networks:
+  #     - ${docker_network}
+
+  ##################################################################################################################
+  ###                                                CLI                                                         ###
+  ##################################################################################################################
+  cli:
+    container_name: cli.${namespace}
+    image: hyperledger/fabric-tools:1.4.3
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.org1.${namespace}:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.${namespace}/users/Admin@org1.${namespace}/msp
+      - CORE_CHAINCODE_KEEPALIVE=10
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${volume_cfg}/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+    networks:
+      - ${docker_network}
+
+  ##################################################################################################################
+  ###                                                Orderers                                                    ###
+  ##################################################################################################################
+  orderer.${namespace}:
+    container_name: orderer.${namespace}
+    extends:
+      file: /home/src/docker-compose-base.yml
+      service: orderer
+    environment:
+      - ORDERER_HOST=orderer.${namespace}
+      - ORDERER_GENERAL_GENESISPROFILE=${genesis_profil}
+      - CONFIGTX_ORDERER_ORDERERTYPE=solo
+    ports:
+      - 7050:7050
+    volumes:
+      - ${volume_cfg}/config:/etc/hyperledger/configtx
+      - ${volume_cfg}/crypto-config/ordererOrganizations/${namespace}/orderers/orderer.${namespace}:/etc/hyperledger/msp/orderer
+    depends_on:
+      - ca.org1.${namespace}
+    networks:
+      - ${docker_network}
+
+  ##################################################################################################################
+  ###                                                Peers                                                       ###
+  ##################################################################################################################
+  peer0.org1.${namespace}:
+    extends:
+      file: /home/src/docker-compose-base.yml
+      service: peer
+    container_name: peer0.org1.${namespace}
+    environment:
+      - CORE_PEER_ID=peer0.org1.${namespace}
+      - CORE_PEER_ADDRESS=peer0.org1.${namespace}:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${docker_network}
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.${namespace}:7051
+    ports:
+      - 7051:7051
+      - 7053:7053
+    volumes:
+        - ${volume_cfg}/config:/etc/hyperledger/configtx
+        - ${volume_cfg}/crypto-config/peerOrganizations/org1.${namespace}/peers/peer0.org1.${namespace}/msp:/etc/hyperledger/peer/msp
+        - ${volume_cfg}/crypto-config/peerOrganizations/org1.${namespace}/users:/etc/hyperledger/msp/users
+    depends_on:
+      - couchdb0
+    networks:
+      - ${docker_network}
+
+  # peer0.org2.${namespace}:
+  #   extends:
+  #     file: /home/src/docker-compose-base.yml
+  #     service: peer
+  #   container_name: peer0.org2.${namespace}
+  #   environment:
+  #     - CORE_PEER_ID=peer0.org2.${namespace}
+  #     - CORE_PEER_ADDRESS=peer0.org2.${namespace}:7051
+  #     - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${docker_network}
+  #     - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
+  #     - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.${namespace}:7051
+  #   ports:
+  #     - 8051:7051
+  #     - 8053:7053
+  #   volumes:
+  #       - ${volume_cfg}/config:/etc/hyperledger/configtx
+  #       - ${volume_cfg}/crypto-config/peerOrganizations/org2.${namespace}/peers/peer0.org2.${namespace}/msp:/etc/hyperledger/peer/msp
+  #       - ${volume_cfg}/crypto-config/peerOrganizations/org2.${namespace}/users:/etc/hyperledger/msp/users
+  #   depends_on:
+  #     - couchdb1
+  #   networks:
+  #     - ${docker_network}
+  
+  ##################################################################################################################
+  ###                                                Couch DBs                                                   ###
+  ##################################################################################################################
+  couchdb0:
+    extends:
+      file: /home/src/docker-compose-base.yml
+      service: couchdb
+    container_name: couchdb0.${namespace}
+    ports:
+      - 5984:5984
+    environment:
+      DB_URL: http://localhost:5984/member_db
+    depends_on:
+      - orderer.${namespace}
+    networks:
+      - ${docker_network}
+
+  # couchdb1:
+  #   extends:
+  #     file: /home/src/docker-compose-base.yml
+  #     service: couchdb
+  #   container_name: couchdb1
+  #   ports:
+  #     - 6984:5984
+  #   environment:
+  #     DB_URL: http://localhost:5984/member_db
+  #   depends_on:
+  #     - orderer.${namespace}
+  #   networks:
+  #     - ${docker_network}
+
+
+##################################################################################################################
+###                                                   APIs                                                     ###
+##################################################################################################################
+  api0:
+    extends:
+      file: /home/src/docker-compose-base.yml
+      service: api
+    image: registry.gitlab.com/flexper/internal/blockchain/fabric/fabric-architecture-seed/api:gql-1.4.7
+    container_name: api0.${namespace}
+    command: ["yarn", "start:prod"]
+    ports:
+      - 4000:4000
+    depends_on:
+      - orderer.${namespace}
+      - peer0.org1.${namespace}
+      - ca.org1.${namespace}
+    environment: 
+      # Nest conf
+      - JWT_SECRET=imasecuresecret
+      - LOG_LEVEL=info
+      - PORT=4000
+      # Fabric conf
+      - FABRIC_ADMIN_NAME=admin
+      - FABRIC_ADMIN_PASSWORD=adminpw
+      - FABRIC_API_USER=user-api-local
+      - FABRIC_WALLET_STORE_PATH=/data/hfc-key-store
+      - FABRIC_CHAINCODE_ID=${namespace}
+      - FABRIC_MSPID=Org1MSP
+      - FABRIC_CHANNEL_NAME=${channel}
+      - FABRIC_CHANNEL_PROFILE_PATH=/app/assets/network.json
+      - FABRIC_CA_TLS_PATH=/data/txt
+      - FABRIC_CA_NAME=ca.org1.${namespace}
+      - FABRIC_CA_URI=http://ca.org1.${namespace}:7054
+      # Chaincode model for graphQL automatic generation
+      - BLOCKCHAIN_JSON_PATH=/app/assets/config.json
+    networks:
+      - ${docker_network}
+    volumes:
+      - ${volume_api}:/app/assets

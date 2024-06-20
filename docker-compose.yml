@@ -1,0 +1,88 @@
+version: '3'
+
+networks:
+  net:
+
+services:
+  builder:
+    build: ./architecture
+    # image: ${REGISTRY}/builder:${FABRIC_VERSION}
+    container_name: ${PROJECT_NAME}.builder
+    environment:
+      # Blockchain variables
+      - NAMESPACE=${PROJECT_NAME}
+      - CHANNEL_NAME=fabricchannel
+      - ORGANISATION_NAME=Org1
+      # Docker variables
+      - DOCKER_NETWORK=${PROJECT_NAME}_net
+      - VOLUME_CFG=${PWD}/data/builder
+      - VOLUME_API=${PWD}/sample_chaincode/api
+      # txgen profils in configtx.yaml
+      - GENESIS_PROFIL=FabricOrdererGenesis
+      - PROFIL=FabricChannel
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/builder:/data
+    networks:
+      - net
+
+  api.gql:
+    build:
+      context: ./api_graphql
+      target: builder
+    command: ["yarn", "start:prod"]
+    container_name: api.gql
+    environment: 
+      # Nest conf
+      - JWT_SECRET=imasecuresecret
+      - LOG_LEVEL=info
+      - PORT=4000
+      # Fabric conf
+      - FABRIC_ADMIN_NAME=admin
+      - FABRIC_ADMIN_PASSWORD=adminpw
+      - FABRIC_API_USER=api-gql-local
+      - FABRIC_WALLET_STORE_PATH=/data/hfc-key-store
+      - FABRIC_CHAINCODE_ID=${PROJECT_NAME}
+      - FABRIC_MSPID=Org1MSP
+      - FABRIC_CHANNEL_NAME=${CHANNEL_NAME}
+      - FABRIC_CHANNEL_PROFILE_PATH=/app/assets/network.json
+      - FABRIC_CA_TLS_PATH=/data/txt
+      - FABRIC_CA_NAME=ca.org1.${PROJECT_NAME}
+      - FABRIC_CA_URI=http://ca.org1.${PROJECT_NAME}:7054
+      # Chaincode model for graphQL automatic generation
+      - BLOCKCHAIN_JSON_PATH=/app/assets/config.json
+    volumes:
+      - ./data/api.gql:/data
+    ports:
+      - 4001:4000
+    networks:
+      - net
+
+  # api.nest:
+  #   build: ./api_nest
+  #   container_name: api.nest
+  #   environment:
+  #     # Nest conf
+  #     - JWT_SECRET=imasecuresecret
+  #     - LOG_LEVEL=info
+  #     - PORT=4000
+  #     # Fabric conf
+  #     - FABRIC_ADMIN_NAME=admin
+  #     - FABRIC_ADMIN_PASSWORD=adminpw
+  #     - FABRIC_API_USER=user-api-local
+  #     - FABRIC_WALLET_STORE_PATH=/data/hfc-key-store
+  #     - FABRIC_CHAINCODE_ID=seed
+  #     - FABRIC_AFFILIATION=""
+  #     - FABRIC_CHANNEL_NAME=fabricchannel
+  #     - FABRIC_CHANNEL_PROFILE_PATH=/app/assets/network.json
+  #     - FABRIC_CA_TLS_PATH=/data/txt
+  #     - FABRIC_CA_NAME=ca.org1.seed
+  #     - FABRIC_CA_URI=http://ca.org1.seed:7054
+  #     # Chaincode model for graphQL automatic generation
+  #     - BLOCKCHAIN_JSON_PATH=/app/assets/config_utxo.json
+  #   volumes:
+  #     - ./data/api.nest:/data
+  #   ports:
+  #     - 4002:4000
+  #   networks:
+  #     - net

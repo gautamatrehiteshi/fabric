@@ -1,0 +1,51 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint/eslint-plugin", "prettier", "import"],
+  "extends": [
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "sourceType": "module"
+  },
+  "root": true,
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "rules": {
+    "max-len": ["error", 120],
+    "max-lines": ["error", 350],
+    "import/prefer-default-export": "off",
+    "class-methods-use-this" : "off", // huge pain with interface
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types" : "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-explicit-any": "off", // not sur about this one
+    "no-unused-vars": "off",
+    "max-classes-per-file": ["error", 3], //input / type & update are allowed in same file
+    /*"@typescript-eslint/no-unused-vars": "off", // the experimental one fix some decorator issue
+    "@typescript-eslint/no-unused-vars-experimental" : [
+      "error", { "ignoreArgsIfArgsAfterAreUsed" :  true}
+    ],*/
+    "import/no-cycle": "off" ,// typeorm will do some cycle with many to many
+    "no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": ["error", {"allowTernary":  true}],
+    "@typescript-eslint/array-type": ["warn", {"default":  "array"}],
+    "no-underscore-dangle" : ["error", { "allowAfterThis": true }]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts"],
+      "rules": {
+        "import/first": "error"
+      }
+    }
+  ]
+}

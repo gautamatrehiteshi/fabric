@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup-peer
+  namespace: peers
+spec:
+  schedule: "55 23 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup-peer
+            image: registry.gitlab.com/flexper/internal/blockchain/fabric/fabric-architecture-seed/backup-peer:latest
+            volumeMounts:
+            - mountPath: /var/hyperledger
+              name: peer-backup-hlf-peer
+              readOnly: true
+            lifecycle:
+              preStop:
+                exec:
+                  command:
+                  - fusermount
+                  - -u
+                  - mnt/peer_backup
+            securityContext:
+              capabilities:
+                add:
+                - SYS_ADMIN
+              privileged: true
+          restartPolicy: OnFailure
+          volumes:
+          - name: peer-backup-hlf-peer
+            persistentVolumeClaim:
+              claimName: peer-backup-hlf-peer
+              readOnly: true
+          imagePullSecrets:
+          - name: gitlab-registry

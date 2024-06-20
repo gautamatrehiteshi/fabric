@@ -1,0 +1,37 @@
+image:
+  tag: 1.4.3
+
+persistence:
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+ord:
+  type: kafka
+  mspID: OrdererMSP
+
+secrets:
+  ord:
+    cert: hlf--ord${NUM}-idcert
+    key: hlf--ord${NUM}-idkey
+    caCert: hlf--ord-ca-cert
+  genesis: hlf--genesis
+  adminCert: hlf--ord-admincert
+
+
+resources : 
+  requests:
+    cpu: "150m"
+    memory: "512Mi"
+  limits:
+    memory: "512Mi"
+    cpu: "150m"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 95
+        podAffinityTerm:
+          topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchLabels:
+              app: hlf-ord

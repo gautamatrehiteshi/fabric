@@ -1,0 +1,37 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: restore-peer
+  namespace: peers
+spec:
+  schedule: "55 23 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: restore-peer
+            image: registry.gitlab.com/flexper/internal/blockchain/fabric/fabric-architecture-seed/restore:latest
+            volumeMounts:
+            - mountPath: /var/hyperledger
+              name: peer1-hlf-peer
+            lifecycle:
+              preStop:
+                exec:
+                  command:
+                  - fusermount
+                  - -u
+                  - mnt/peer_backup
+            securityContext:
+              capabilities:
+                add:
+                - SYS_ADMIN
+              privileged: true
+          restartPolicy: OnFailure
+          volumes:
+          - name: peer1-hlf-peer
+            persistentVolumeClaim:
+              claimName: peer1-hlf-peer
+          imagePullSecrets:
+          - name: gitlab-registry

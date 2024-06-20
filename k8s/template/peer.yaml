@@ -1,0 +1,45 @@
+image:
+  tag: 1.4.3
+
+persistence:
+  accessMode: ReadWriteOnce
+  size: 50Gi
+  storageClass: faster
+
+peer:
+  databaseType: CouchDB
+  couchdbInstance: cdb-peer${NUM}
+  mspID: canbmsp
+  gossip:
+    externalEndpoint: peer1-hlf-peer.peers.svc.cluster.local:7051
+  chaincode:
+    builder: "hyperledger/fabric-ccenv:1.4"
+
+secrets:
+  peer:
+    cert: hlf--peer${NUM}-idcert
+    key: hlf--peer${NUM}-idkey
+    caCert: hlf--peer-ca-cert
+  channels:
+    - hlf--channel
+  adminCert: hlf--peer-admincert
+  adminKey: hlf--peer-adminkey
+
+
+resources : 
+  requests:
+    cpu: "2"
+    memory: "2048Mi"
+  limits:
+    memory: "2048Mi"
+    cpu: "2"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 95
+        podAffinityTerm:
+          topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchLabels:
+              app: hlf-peer

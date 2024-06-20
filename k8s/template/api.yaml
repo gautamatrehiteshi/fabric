@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config-map${NUM}
+  namespace: peers
+data:
+  PORT: "3000"
+  NODE_ENV: development
+  CA_ADDRESS: ca-hlf-ca.cas.svc.cluster.local
+  CA_PORT: "7054"
+  CA_NAME: ca
+  API_USER: userApi${NUM}
+  ADMIN_NAME: admin
+  ADMIN_PWD: ${ADMIN_PASS}
+  ORG_MSPID: PeerMSP
+  CHAINCODE_ID: ${CHAINCODE_ID}
+  CHAINCODE_CHANNEL: mychannel
+  PEER_ADDRESS: peer${NUM}-hlf-peer.peers.svc.cluster.local
+  PEER_PORT: "7051"
+  ORDERER_ADDRESS: ord${NUM}-hlf-ord.orderers.svc.cluster.local
+  ORDERER_PORT: "7050"
+  LOG_FILE_PATH: "/data/log/api.log"
+  STORE_PATH: "/data/hfc-key-store" 
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: api-peer${NUM}
+  namespace: peers
+spec:
+  selector:
+    matchLabels:
+      app: api-peer
+  replicas: 1
+  serviceName: "api-peer-headless"
+  template:
+    metadata:
+      labels:
+        app: api-peer
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: api-config-map${NUM}
+                optional: false
+          image: ${DOCKER_IMG}
+          imagePullPolicy: Always
+          name: api-peer
+          ports:
+            - containerPort: 3000
+              name: 3000tcp02
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+         
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts :
+            - name: log-api
+              mountPath: /data/log
+            - name : store
+              mountPath : /data/hfc-key-store
+      imagePullSecrets:
+        - name: gitlab-secret
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+  volumeClaimTemplates:
+  - metadata:
+      name: log-api
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  - metadata:
+      name: store
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
+          
